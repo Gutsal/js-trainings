@@ -1,0 +1,15 @@
+.searchInput {
+    position: relative;
+}
+    .searchInput #keyword {
+        width: 200px;
+		position:relative;
+		z-index:1;
+    }
+
+    .searchInput select {
+        display: none;
+        position: relative;
+		width:200px;
+		z-index:1;
+    }
