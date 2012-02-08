@@ -1,13 +1,13 @@
 .searchInput {
     position: relative;
 }
-    .searchInput #keyword {
+    .searchInput .keyword {
         width: 200px;
 		position:relative;
 		z-index:1;
     }
 
-    .searchInput select {
+    .select-result {
         display: none;
         position: relative;
 		width:200px;

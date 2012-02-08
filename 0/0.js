@@ -1,20 +1,53 @@
-if (window.addEventListener) /* !IE */
-    window.addEventListener("load", SearchCountry, true);
-else
-if (window.attachEvent) /* IE */
-    window.attachEvent("onload", SearchCountry);
-else
-    window.onload = SearchCountry;
 
-function SearchCountry() {
+function SearchCountry(keyword) {
     //alert(document.searchForm.q.className);
-    var keyword = document.getElementById('keyword');
-    var results = document.getElementById('search-result');
-    alert(keyword)
-    /* Event listener */
-    var eventListener = function (el, type, fn) {
+    LEFT = 37;
+    UP = 38;
+    RIGHT = 39;
+    DOWN = 40;
+    ENTER = 13;
+
+    var searchInput = document.getElementsByName(keyword);
+    for (i=0;i<searchInput.length;i++){ // Добавление ID всем найденому по имени полю
+        searchInput[i].id = keyword;
+    }
+    var searchId = document.getElementById(keyword);
+    searchParent = searchId.parentNode;
+    searchParent.id = 'div-'+keyword; // Добавление ID родительскому элементу DOM
+
+    /*   XMLHTTPRequest Method    */
+    SearchCountry.searchNameq = function (keyPhrase) {
+        //alert(keyPhrase)
+        searchUrl = 'http://javascript-training.gametrailers.minsk.epam.com/jstraning/countries.php?q='+keyPhrase;
+        http = new XMLHttpRequest();
+        http.onreadystatechange =  function() {searchReply()};
+        http.open('get', searchUrl, true);
+        http.send(null);
+        //alert(searchUrl);
+    }
+
+    /*   Конструктор создания элемента вывода результатов    */
+     function CreatElement(tagElement, idElement){
+         this.tagElement = tagElement;
+         this.idElement = idElement;
+         this.elementCreat = function(){
+             var newElement = document.createElement(this.tagElement);
+             newElement.id = 'search-result-'+this.idElement;
+             newElement.className = 'select-result';
+             newElement.multiple = 'multiple';
+             return newElement;
+         }
+     }
+
+    var newSelectElement = new CreatElement('select',keyword);  // создание экземпляра класса
+    var results = newSelectElement.elementCreat();              // вызов метода экземпляра для создания элемента вывода
+    searchParent.appendChild(results);                          // открытие в DOM
+
+    /* Event listener Method */
+    SearchCountry.eventListener = function (el, type, fn) {
         if (typeof el.addEventListener === 'function') {
             eventListener = function (el, type, fn) {
+                //alert(el)
                 el.addEventListener(type, fn, false);
             };
         } else if (typeof el.attachEvent === 'function') {
@@ -36,21 +69,18 @@ function SearchCountry() {
 
         results.selectedIndex = -1;
 
-        if (keyword.value.length > 2 && e.key != 13) {
-
-            if (e.key == 40) {
+        if (searchId.value.length > 2 && e.key != ENTER) {
+            if (e.key == DOWN) {
                 results.focus();
                 results.getElementsByTagName('option')[0].selected = 'selected';
                 eventListener(results, 'keydown', listHandler);
                 return;
             }
-
-            if (e.key == 37 || e.key == 38 || e.key == 39) {
-
-            } else {
-                //alert(keyword.value.length);
-                searchNameq();
+            if (e.key != LEFT && e.key != UP && e.key != RIGHT) {
+                SearchCountry.searchNameq(searchId.value);   // вызов метода запроса
             }
+        }else if (searchId.value.length < 3){ // если пустое или короткое поле - скрыть результат
+            results.style.display = 'none';
         }
     };
 
@@ -64,11 +94,11 @@ function SearchCountry() {
 
         if(e.key) {
 			// if "Enter" key
-			if (e.key == 13){
-				keyword.value = this[this.selectedIndex].text;
+			if (e.key == ENTER){
+                searchId.value = this[this.selectedIndex].text;
 				this.selectedIndex = -1;
 				this.style.display = 'none';
-				keyword.focus();
+                searchId.focus();
 				// prevent default action
 				if(e.preventDefault) {
 					e.preventDefault();
@@ -78,11 +108,16 @@ function SearchCountry() {
 				return;
 			}
 			// if "Up Arrow" key
-			if (e.key == 38){
-				if (this.selectedIndex == 0) {
-					keyword.focus();
-				}
-			}
+            if (e.key == UP){
+                if (this.selectedIndex == 0) {
+                    searchId.focus();
+                }
+            }
+            if (e.key == DOWN){ // перебор, если конец списка
+                if (this.selectedIndex == this.length-1) {
+                    this.selectedIndex = -1;
+                }
+            }
         }
     }
 
@@ -90,27 +125,16 @@ function SearchCountry() {
     function clickHandler(e){
         e = e || window.event;
         e.key = e.key || e.keyCode;
-        keyword.value = this[this.selectedIndex].text;
+        searchId.value = this[this.selectedIndex].text;
         this.selectedIndex = -1;
         this.style.display = 'none';
-        keyword.focus();
+        searchId.focus();
     }
 
 
-    eventListener(keyword, 'keyup', inputHandler);
-    eventListener(results, 'click', listHandler);
-    eventListener(results, 'click', clickHandler);
-
-
-	/*   XMLHTTPRequest    */
-    function searchNameq() {
-        //alert(this)
-        http = new XMLHttpRequest();
-        http.onreadystatechange =  function() {searchReply()};
-        var keyword = document.getElementById('keyword');
-        http.open('get', 'http://javascript-training.gametrailers.minsk.epam.com/jstraning/countries.php?q='+keyword.value, true);
-        http.send(null);
-    }
+    SearchCountry.eventListener(searchId, 'keyup', inputHandler);    // обработчик для поля ввода
+    SearchCountry.eventListener(results, 'click', listHandler);         // перебор списка результатов
+    SearchCountry.eventListener(results, 'click', clickHandler);        // Клик мышью
 
 
     //  Building a list
@@ -120,12 +144,11 @@ function SearchCountry() {
                     var response = eval('('+http.responseText+')');
                     //var response = {"countries":[{"id":20,"iso2":"BY","iso3":"BLR","short_name":"Belarus","long_name":"Republic of Belarus"},{"id":21,"iso2":"BE","iso3":"BEL","short_name":"Belgium","long_name":"Kingdom of Belgium"},{"id":22,"iso2":"BZ","iso3":"BLZ","short_name":"Belize","long_name":"Belize"}]}
                     var listHTML = '';
-                    //alert(response.countries.length);
                     for (var i=0; i<response.countries.length; i++){
                         listHTML += '<option value="'+response.countries[i].id+'">'+response.countries[i].short_name+'</option>';
                     }
-                    document.getElementById('search-result').innerHTML = listHTML;
-                    document.getElementById("search-result").style.display = "block";
+                    results.innerHTML = listHTML;
+                    results.style.display = "block";
                 }
                 else{
                     alert('Error: Status = '+http.status)
