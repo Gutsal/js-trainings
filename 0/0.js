@@ -20,28 +20,51 @@ function SearchCountry(keyword) {
         //alert(keyPhrase)
         searchUrl = 'http://javascript-training.gametrailers.minsk.epam.com/jstraning/countries.php?q='+keyPhrase;
         http = new XMLHttpRequest();
-        http.onreadystatechange =  function() {searchReply()};
+        http.onreadystatechange =  function(){ SearchCountry.searchReply(); }
         http.open('get', searchUrl, true);
         http.send(null);
         //alert(searchUrl);
     }
 
     /*   Конструктор создания элемента вывода результатов    */
-     function CreatElement(tagElement, idElement){
-         this.tagElement = tagElement;
-         this.idElement = idElement;
-         this.elementCreat = function(){
-             var newElement = document.createElement(this.tagElement);
-             newElement.id = 'search-result-'+this.idElement;
-             newElement.className = 'select-result';
-             newElement.multiple = 'multiple';
-             return newElement;
-         }
-     }
+    function CreatElement(tagElement, idElement){
+        this.tagElement = tagElement;
+        this.idElement = idElement;
+        this.elementCreat = function(){
+            var newElement = document.createElement(this.tagElement);
+            newElement.id = 'search-result-'+this.idElement;
+            newElement.className = 'select-result';
+            newElement.multiple = 'multiple';
+            return newElement;
+        }
+    }
 
     var newSelectElement = new CreatElement('select',keyword);  // создание экземпляра класса
     var results = newSelectElement.elementCreat();              // вызов метода экземпляра для создания элемента вывода
     searchParent.appendChild(results);                          // открытие в DOM
+
+    //  Building a list Method
+    SearchCountry.searchReply = function () {
+        if(http.readyState == 4){
+            if(http.status == 200){
+                var response = eval('('+http.responseText+')');
+                //var response = {"countries":[{"id":20,"iso2":"BY","iso3":"BLR","short_name":"Belarus","long_name":"Republic of Belarus"},{"id":21,"iso2":"BE","iso3":"BEL","short_name":"Belgium","long_name":"Kingdom of Belgium"},{"id":22,"iso2":"BZ","iso3":"BLZ","short_name":"Belize","long_name":"Belize"}]}
+                var listHTML = '';
+                for (var i=0; i<response.countries.length; i++){
+                    listHTML += '<option value="'+response.countries[i].id+'">'+response.countries[i].short_name+'</option>';
+                }
+                results.innerHTML = listHTML;
+                results.style.display = "block";
+            }
+            else{
+                alert('Error: Status = '+http.status)
+            }
+        }
+        else{
+            //alert('Error:'+http.readyState);
+        }
+    }
+
 
     /* Event listener Method */
     SearchCountry.eventListener = function (el, type, fn) {
@@ -62,21 +85,26 @@ function SearchCountry(keyword) {
         return eventListener(el, type, fn);
     };
 
-    /* input handler */
-	var inputHandler = function (e) {
+    SearchCountry.getKeyCode = function(e){
         e = e || window.event;
         e.key = e.key || e.keyCode;
+        return e.key;
+    }
 
+    /* input handler */
+	var inputHandler = function (e) {
+
+        var keyCodeValue = SearchCountry.getKeyCode(e);
         results.selectedIndex = -1;
 
         if (searchId.value.length > 2 && e.key != ENTER) {
-            if (e.key == DOWN) {
+            if (keyCodeValue == DOWN) {
                 results.focus();
                 results.getElementsByTagName('option')[0].selected = 'selected';
                 eventListener(results, 'keydown', listHandler);
                 return;
             }
-            if (e.key != LEFT && e.key != UP && e.key != RIGHT) {
+            if (keyCodeValue != LEFT && keyCodeValue != UP && keyCodeValue != RIGHT) {
                 SearchCountry.searchNameq(searchId.value);   // вызов метода запроса
             }
         }else if (searchId.value.length < 3){ // если пустое или короткое поле - скрыть результат
@@ -87,14 +115,11 @@ function SearchCountry(keyword) {
 
     /* list handler */
     function listHandler(e) {
-        e = e || window.event;
-        e.key = e.key || e.keyCode;
+        var keyCodeValue = SearchCountry.getKeyCode(e);
 
-        this[this.selectedIndex].onclick = clickHandler;
-
-        if(e.key) {
+        if(keyCodeValue) {
 			// if "Enter" key
-			if (e.key == ENTER){
+			if (keyCodeValue == ENTER){
                 searchId.value = this[this.selectedIndex].text;
 				this.selectedIndex = -1;
 				this.style.display = 'none';
@@ -108,12 +133,12 @@ function SearchCountry(keyword) {
 				return;
 			}
 			// if "Up Arrow" key
-            if (e.key == UP){
+            if (keyCodeValue == UP){
                 if (this.selectedIndex == 0) {
                     searchId.focus();
                 }
             }
-            if (e.key == DOWN){ // перебор, если конец списка
+            if (keyCodeValue == DOWN){ // перебор, если конец списка
                 if (this.selectedIndex == this.length-1) {
                     this.selectedIndex = -1;
                 }
@@ -122,40 +147,15 @@ function SearchCountry(keyword) {
     }
 
     /* Mouse click handler */
-    function clickHandler(e){
-        e = e || window.event;
-        e.key = e.key || e.keyCode;
+    SearchCountry.clickHandler = function(){
         searchId.value = this[this.selectedIndex].text;
         this.selectedIndex = -1;
         this.style.display = 'none';
         searchId.focus();
     }
 
-
     SearchCountry.eventListener(searchId, 'keyup', inputHandler);    // обработчик для поля ввода
     SearchCountry.eventListener(results, 'click', listHandler);         // перебор списка результатов
-    SearchCountry.eventListener(results, 'click', clickHandler);        // Клик мышью
+    SearchCountry.eventListener(results, 'click', SearchCountry.clickHandler);        // Клик мышью
 
-
-    //  Building a list
-    function searchReply() {
-            if(http.readyState == 4){
-                if(http.status == 200){
-                    var response = eval('('+http.responseText+')');
-                    //var response = {"countries":[{"id":20,"iso2":"BY","iso3":"BLR","short_name":"Belarus","long_name":"Republic of Belarus"},{"id":21,"iso2":"BE","iso3":"BEL","short_name":"Belgium","long_name":"Kingdom of Belgium"},{"id":22,"iso2":"BZ","iso3":"BLZ","short_name":"Belize","long_name":"Belize"}]}
-                    var listHTML = '';
-                    for (var i=0; i<response.countries.length; i++){
-                        listHTML += '<option value="'+response.countries[i].id+'">'+response.countries[i].short_name+'</option>';
-                    }
-                    results.innerHTML = listHTML;
-                    results.style.display = "block";
-                }
-                else{
-                    alert('Error: Status = '+http.status)
-                }
-            }
-            else{
-                //alert('Error:'+http.readyState);
-            }
-    }
 }
