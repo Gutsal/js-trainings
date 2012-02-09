@@ -1,47 +1,155 @@
-
-function SearchCountry(keyword) {
-    //alert(document.searchForm.q.className);
-    LEFT = 37;
-    UP = 38;
-    RIGHT = 39;
-    DOWN = 40;
-    ENTER = 13;
-
-    var searchInput = document.getElementsByName(keyword);
-    for (i=0;i<searchInput.length;i++){ // Добавление ID всем найденому по имени полю
-        searchInput[i].id = keyword;
+/*   XMLHTTPRequest Constructor    */
+function SearchNameq (keyPhrase) {
+    http = null;
+    if (window.XMLHttpRequest) {
+        try {
+            http = new XMLHttpRequest();
+        } catch (e){}
+    } else if (window.ActiveXObject) {
+        try {
+            http = new ActiveXObject('Msxml2.XMLHTTP');
+        } catch (e){
+            try {
+                http = new ActiveXObject('Microsoft.XMLHTTP');
+            } catch (e){}
+        }
     }
-    var searchId = document.getElementById(keyword);
-    searchParent = searchId.parentNode;
-    searchParent.id = 'div-'+keyword; // Добавление ID родительскому элементу DOM
-
-    /*   XMLHTTPRequest Method    */
-    SearchCountry.searchNameq = function (keyPhrase) {
-        //alert(keyPhrase)
+    if (http){
         searchUrl = 'http://javascript-training.gametrailers.minsk.epam.com/jstraning/countries.php?q='+keyPhrase;
-        http = new XMLHttpRequest();
         http.onreadystatechange =  function(){ SearchCountry.searchReply(); }
         http.open('get', searchUrl, true);
         http.send(null);
-        //alert(searchUrl);
+    }else{
+        alert("Браузер не поддерживает AJAX");
     }
+}
 
-    /*   Конструктор создания элемента вывода результатов    */
-    function CreatElement(tagElement, idElement){
+/* Event listener Constructor */
+function EventListener (el, type, fn) {
+    if (typeof el.addEventListener === 'function') {
+        EventListener = function (el, type, fn) {
+            //alert(el)
+            el.addEventListener(type, fn, false);
+        };
+    } else if (typeof el.attachEvent === 'function') {
+        EventListener = function (el, type, fn) {
+            el.attachEvent('on' + type, fn);
+        };
+    } else {
+        EventListener = function (el, type, fn) {
+            el['on' + type] = fn;
+        };
+    }
+    return EventListener(el, type, fn);
+}
+
+/* Key Code Constructor */
+function GetKeyCode(e){
+    e = e || window.event;
+    e.key = e.key || e.keyCode;
+    return e.key;
+}
+
+/* Search Request Constructor */
+function SearchCountry(word) {
+
+    SearchCountry.LEFT = 37;
+    SearchCountry.UP = 38;
+    SearchCountry.RIGHT = 39;
+    SearchCountry.DOWN = 40;
+    SearchCountry.ENTER = 13;
+
+    this.keyword = word;
+
+    /* Get element INPUT for handling */
+    this.getElementInput = function(){
+        var searchInputCollection = document.getElementsByName(this.keyword);       // Collection of objects INPUT
+        var searchInputArray = Array.prototype.slice.call(searchInputCollection);   // Conversion to Array
+        var searchInput = searchInputArray.shift();                                 // Extraction the first element of the array
+        searchInput.id = this.keyword;
+        var searchId = document.getElementById(this.keyword);
+        return searchId;
+    };
+
+    /* Create Element to output the results */
+    this.creatElement = function(tagElement, idElement){
         this.tagElement = tagElement;
         this.idElement = idElement;
-        this.elementCreat = function(){
-            var newElement = document.createElement(this.tagElement);
-            newElement.id = 'search-result-'+this.idElement;
-            newElement.className = 'select-result';
-            newElement.multiple = 'multiple';
-            return newElement;
-        }
-    }
 
-    var newSelectElement = new CreatElement('select',keyword);  // создание экземпляра класса
-    var results = newSelectElement.elementCreat();              // вызов метода экземпляра для создания элемента вывода
-    searchParent.appendChild(results);                          // открытие в DOM
+        var results = document.createElement(this.tagElement);
+        results.id = 'search-result-'+this.idElement;
+        results.className = 'select-result';
+        results.multiple = 'multiple';
+
+        searchParent = searchId.parentNode;
+        searchParent.id = 'div-'+this.keyword; // add ID to parent element DOM
+        searchParent.appendChild(results);     // open results list
+        return results;
+    };
+
+    var searchId = this.getElementInput();                      // Element INPUT initialization
+    var results = this.creatElement('select',this.keyword);     // Result Element initialization
+
+    /* input handler */
+    SearchCountry.inputHandler = function (e) {
+        var keyCodeValue = GetKeyCode(e);
+        results.selectedIndex = -1;
+        if (searchId.value.length > 2 && keyCodeValue != SearchCountry.ENTER) {
+            if (keyCodeValue == SearchCountry.DOWN) {
+                results.focus();
+                results.getElementsByTagName('option')[0].selected = 'selected';
+                EventListener(results, 'keydown', SearchCountry.listHandler);
+                return;
+            }
+            if (keyCodeValue != SearchCountry.LEFT && keyCodeValue != SearchCountry.UP && keyCodeValue != SearchCountry.RIGHT) {
+                SearchNameq(searchId.value);   // Constructor call XMLHTTPRequest
+            }
+        }else if (searchId.value.length < 3){ // if empty area - hide the result
+            results.style.display = 'none';
+        }
+    };
+
+    /* list handler */
+    SearchCountry.listHandler = function(e) {
+        var keyCodeValue = GetKeyCode(e);
+
+        if(keyCodeValue) {
+            // if "Enter" key
+            if (keyCodeValue == SearchCountry.ENTER){
+                searchId.value = this[this.selectedIndex].text;
+                this.selectedIndex = -1;
+                this.style.display = 'none';
+                searchId.focus();
+                // prevent default action
+                if(e.preventDefault) {
+                    e.preventDefault();
+                } else {
+                    e.returnValue = false;
+                }
+                return;
+            }
+            // if "Up Arrow" key
+            if (keyCodeValue == SearchCountry.UP){
+                if (this.selectedIndex == 0) {
+                    searchId.focus();
+                }
+            }
+            // if choose the last
+            if (keyCodeValue == SearchCountry.DOWN){
+                if (this.selectedIndex == this.length-1) {
+                    this.selectedIndex = -1;
+                }
+            }
+        }
+    };
+
+    /* Mouse click handler */
+    SearchCountry.clickHandler = function(){
+        searchId.value = this[this.selectedIndex].text;
+        this.selectedIndex = -1;
+        this.style.display = 'none';
+        searchId.focus();
+    };
 
     //  Building a list Method
     SearchCountry.searchReply = function () {
@@ -56,106 +164,17 @@ function SearchCountry(keyword) {
                 results.innerHTML = listHTML;
                 results.style.display = "block";
             }
-            else{
-                alert('Error: Status = '+http.status)
+            else {
+                alert("Не удалось получить данные:\n" + http.statusText);
             }
-        }
-        else{
-            //alert('Error:'+http.readyState);
-        }
-    }
-
-
-    /* Event listener Method */
-    SearchCountry.eventListener = function (el, type, fn) {
-        if (typeof el.addEventListener === 'function') {
-            eventListener = function (el, type, fn) {
-                //alert(el)
-                el.addEventListener(type, fn, false);
-            };
-        } else if (typeof el.attachEvent === 'function') {
-            eventListener = function (el, type, fn) {
-                el.attachEvent('on' + type, fn);
-            };
-        } else {
-            eventListener = function (el, type, fn) {
-                el['on' + type] = fn;
-            };
-        }
-        return eventListener(el, type, fn);
-    };
-
-    SearchCountry.getKeyCode = function(e){
-        e = e || window.event;
-        e.key = e.key || e.keyCode;
-        return e.key;
-    }
-
-    /* input handler */
-	var inputHandler = function (e) {
-
-        var keyCodeValue = SearchCountry.getKeyCode(e);
-        results.selectedIndex = -1;
-
-        if (searchId.value.length > 2 && e.key != ENTER) {
-            if (keyCodeValue == DOWN) {
-                results.focus();
-                results.getElementsByTagName('option')[0].selected = 'selected';
-                eventListener(results, 'keydown', listHandler);
-                return;
-            }
-            if (keyCodeValue != LEFT && keyCodeValue != UP && keyCodeValue != RIGHT) {
-                SearchCountry.searchNameq(searchId.value);   // вызов метода запроса
-            }
-        }else if (searchId.value.length < 3){ // если пустое или короткое поле - скрыть результат
-            results.style.display = 'none';
         }
     };
 
-
-    /* list handler */
-    function listHandler(e) {
-        var keyCodeValue = SearchCountry.getKeyCode(e);
-
-        if(keyCodeValue) {
-			// if "Enter" key
-			if (keyCodeValue == ENTER){
-                searchId.value = this[this.selectedIndex].text;
-				this.selectedIndex = -1;
-				this.style.display = 'none';
-                searchId.focus();
-				// prevent default action
-				if(e.preventDefault) {
-					e.preventDefault();
-				} else {
-					e.returnValue = false;
-				}
-				return;
-			}
-			// if "Up Arrow" key
-            if (keyCodeValue == UP){
-                if (this.selectedIndex == 0) {
-                    searchId.focus();
-                }
-            }
-            if (keyCodeValue == DOWN){ // перебор, если конец списка
-                if (this.selectedIndex == this.length-1) {
-                    this.selectedIndex = -1;
-                }
-            }
-        }
+    this.init = function(){
+        EventListener(searchId, 'keyup', SearchCountry.inputHandler);    // INPUT handler call
+        EventListener(results, 'click', SearchCountry.listHandler);      // Parsing of results list
+        EventListener(results, 'click', SearchCountry.clickHandler);     // Mouse click event
     }
 
-    /* Mouse click handler */
-    SearchCountry.clickHandler = function(){
-        searchId.value = this[this.selectedIndex].text;
-        this.selectedIndex = -1;
-        this.style.display = 'none';
-        searchId.focus();
-    }
-
-    SearchCountry.eventListener(searchId, 'keyup', inputHandler);    // обработчик для поля ввода
-    SearchCountry.eventListener(results, 'click', listHandler);         // перебор списка результатов
-    SearchCountry.eventListener(results, 'click', SearchCountry.clickHandler);        // Клик мышью
-
+    this.init();
 }
