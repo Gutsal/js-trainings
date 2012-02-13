@@ -2,66 +2,81 @@
 function XMLHTTP_Request (keyPhrase) {
     this.phrase = keyPhrase;
     XMLHTTP_Request.http = null;
+    XMLHTTP_Request.READY = 4;
+    XMLHTTP_Request.STATUS = 200;
+    XMLHTTP_Request.URL = 'http://javascript-training.gametrailers.minsk.epam.com/jstraning/countries.php?q=';
+}
 
-    XMLHTTP_Request.prototype.CreateRequest = function(){
-        if (window.XMLHttpRequest) {
+XMLHTTP_Request.prototype.CreateRequest = function(){
+    if (window.XMLHttpRequest) {
+        try {
+            XMLHTTP_Request.http = new XMLHttpRequest();
+        } catch (e){
+            console.log("Name", e.name, "Message", e.message);
+        }
+    } else if (window.ActiveXObject) {
+        try {
+            XMLHTTP_Request.http = new ActiveXObject('Msxml2.XMLHTTP');
+        } catch (e){
             try {
-                XMLHTTP_Request.http = new XMLHttpRequest();
+                XMLHTTP_Request.http = new ActiveXObject('Microsoft.XMLHTTP');
             } catch (e){
                 console.log("Name", e.name, "Message", e.message);
+                //console.exception(e.name, e.message);
             }
-        } else if (window.ActiveXObject) {
-            try {
-                XMLHTTP_Request.http = new ActiveXObject('Msxml2.XMLHTTP');
-            } catch (e){
-                try {
-                    XMLHTTP_Request.http = new ActiveXObject('Microsoft.XMLHTTP');
-                } catch (e){
-                    console.log("Name", e.name, "Message", e.message);
-                    //console.exception(e.name, e.message);
+        }
+    }
+    return XMLHTTP_Request.http;
+}
+
+XMLHTTP_Request.prototype.SendRequest = function(){
+    if (XMLHTTP_Request.http){
+        searchUrl = XMLHTTP_Request.URL+this.phrase;
+        XMLHTTP_Request.http.onreadystatechange =  function(){
+            if(XMLHTTP_Request.http.readyState == XMLHTTP_Request.READY){
+                if(XMLHTTP_Request.http.status == XMLHTTP_Request.STATUS){
+                    SearchCountry.searchReply();
+                }
+                else {
+                    console.log("Unable to get data. XMLHTTP_Request.http.status:",XMLHTTP_Request.http.status);
                 }
             }
         }
-        return XMLHTTP_Request.http;
-    }
-
-    XMLHTTP_Request.prototype.SendRequest = function(){
-        if (XMLHTTP_Request.http){
-            searchUrl = 'http://javascript-training.gametrailers.minsk.epam.com/jstraning/countries.phsp?q='+this.phrase;
-            XMLHTTP_Request.http.onreadystatechange =  function(){ SearchCountry.searchReply(); }
-            XMLHTTP_Request.http.open('get', searchUrl, true);
-            XMLHTTP_Request.http.send(null);
-        }else{
-            alert("Браузер не поддерживает AJAX");
-        }
+        XMLHTTP_Request.http.open('get', searchUrl, true);
+        XMLHTTP_Request.http.send(null);
+    }else{
+        console.log("Браузер не поддерживает AJAX");
     }
 }
 
+
 /* Event listener Constructor */
 function EventListener (el, type, fn) {
-    EventListener.el = el;
-    EventListener.type = type;
-    EventListener.fn = fn;
+    this.el = el;
+    this.type = type;
+    this.fn = fn;
+}
 
-    EventListener.prototype.Create_EventListener = function(){
-        if (typeof EventListener.el.addEventListener === 'function') {
-            EventListener.el.addEventListener(EventListener.type, EventListener.fn, false);
-        } else if (typeof EventListener.el.attachEvent === 'function') {
-            EventListener.el.attachEvent('on' + EventListener.type, EventListener.fn);
-        } else {
-            EventListener.el['on' + EventListener.type] = EventListener.fn;
-            //alert(EventListener.el['on' + EventListener.type]);
-        }
+/* ADD Event Method */
+EventListener.prototype.Create_EventListener = function(){
+    if (typeof this.el.addEventListener === 'function') {
+        this.el.addEventListener(this.type, this.fn, false);
+    } else if (typeof this.el.attachEvent === 'function') {
+        this.el.attachEvent('on' + this.type, this.fn);
+    } else {
+        this.el['on' + this.type] = this.fn;
+        //alert(this.el['on' + this.type]);
     }
+}
 
-    EventListener.prototype.Remove_EventListener = function(){
-        if (typeof EventListener.el.removeEventListener === 'function') {
-            EventListener.el.removeEventListener(EventListener.type, EventListener.fn, false);
-        } else if (typeof EventListener.el.detachEvent === 'function') {
-            EventListener.el.detachEvent('on' + EventListener.type, EventListener.fn);
-        } else {
-            //EventListener.el['on' + EventListener.type] = EventListener.fn;
-        }
+/* REMOVE Event Method */
+EventListener.prototype.Remove_EventListener = function(){
+    if (typeof this.el.removeEventListener === 'function') {
+        this.el.removeEventListener(this.type, this.fn, false);
+    } else if (typeof this.el.detachEvent === 'function') {
+        this.el.detachEvent('on' + this.type, this.fn);
+    } else {
+        //this.el['on' + this.type] = this.fn;
     }
 }
 
@@ -80,6 +95,7 @@ function SearchCountry(word) {
     SearchCountry.RIGHT = 39;
     SearchCountry.DOWN = 40;
     SearchCountry.ENTER = 13;
+    //SearchCountry.countries = '';
 
     this.keyword = word;
 
@@ -179,21 +195,16 @@ function SearchCountry(word) {
 
     //  Building a list Method
     SearchCountry.searchReply = function() {
-        if(XMLHTTP_Request.http.readyState == 4){
-            if(XMLHTTP_Request.http.status == 200){
-                var response = eval('('+XMLHTTP_Request.http.responseText+')');
-                //var response = {"countries":[{"id":20,"iso2":"BY","iso3":"BLR","short_name":"Belarus","long_name":"Republic of Belarus"},{"id":21,"iso2":"BE","iso3":"BEL","short_name":"Belgium","long_name":"Kingdom of Belgium"},{"id":22,"iso2":"BZ","iso3":"BLZ","short_name":"Belize","long_name":"Belize"}]}
-                var listHTML = '';
-                for (var i=0; i<response.countries.length; i++){
-                    listHTML += '<option value="'+response.countries[i].id+'">'+response.countries[i].short_name+'</option>';
-                }
-                results.innerHTML = listHTML;
-                results.style.display = "block";
-            }
-            else {
-                console.log("Unable to get data. XMLHTTP_Request.http.status:",XMLHTTP_Request.http.status);
-            }
+        var response = eval('('+XMLHTTP_Request.http.responseText+')');
+        response = response.countries;
+        //alert(typeof response);
+        //var response = {"countries":[{"id":20,"iso2":"BY","iso3":"BLR","short_name":"Belarus","long_name":"Republic of Belarus"},{"id":21,"iso2":"BE","iso3":"BEL","short_name":"Belgium","long_name":"Kingdom of Belgium"},{"id":22,"iso2":"BZ","iso3":"BLZ","short_name":"Belize","long_name":"Belize"}]}
+        var listHTML = '';
+        for (var i=0; i<response.length; i++){
+            listHTML += '<option value="'+response[i].id+'">'+response[i].short_name+'</option>';
         }
+        results.innerHTML = listHTML;
+        results.style.display = "block";
     };
 
     this.init = function(){
