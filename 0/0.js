@@ -49,7 +49,6 @@ XMLHTTP_Request.prototype.SendRequest = function(){
     }
 }
 
-
 /* Event listener Constructor */
 function EventListener (el, type, fn) {
     this.el = el;
@@ -65,7 +64,6 @@ EventListener.prototype.Create_EventListener = function(){
         this.el.attachEvent('on' + this.type, this.fn);
     } else {
         this.el['on' + this.type] = this.fn;
-        //alert(this.el['on' + this.type]);
     }
 }
 
@@ -87,6 +85,29 @@ function GetKeyCode(e){
     return e.key;
 }
 
+/* Get element INPUT for handling */
+SearchCountry.prototype.getElementInput = function(){
+    //alert(this);
+    var searchInputCollection = document.getElementsByClassName(this.keyword);   // Collection of objects for search
+    var searchInputArray = Array.prototype.slice.call(searchInputCollection);   // Conversion to Array
+    var searchInput = searchInputArray.shift();                                 // Extraction the first element of the array
+    return searchInput;
+};
+
+/* Create Element to output the results */
+SearchCountry.prototype.creatElement = function(tagElement, idElement, searchId){
+    this.tagElement = tagElement;
+    this.idElement = idElement;
+    var results = document.createElement(this.tagElement);
+    results.className = 'select-result';
+    results.multiple = 'multiple';
+
+    searchParent = searchId.parentNode;
+    searchParent.appendChild(results);     // open results list
+    return results;
+};
+
+
 /* Search Request Constructor */
 function SearchCountry(word) {
 
@@ -95,37 +116,24 @@ function SearchCountry(word) {
     SearchCountry.RIGHT = 39;
     SearchCountry.DOWN = 40;
     SearchCountry.ENTER = 13;
-    //SearchCountry.countries = '';
+    SearchCountry.countries = null;
 
     this.keyword = word;
 
-    /* Get element INPUT for handling */
-    SearchCountry.prototype.getElementInput = function(){
-        var searchInputCollection = document.getElementsByName(this.keyword);       // Collection of objects INPUT
-        var searchInputArray = Array.prototype.slice.call(searchInputCollection);   // Conversion to Array
-        var searchInput = searchInputArray.shift();                                 // Extraction the first element of the array
-        searchInput.id = this.keyword;
-        var searchId = document.getElementById(this.keyword);
-        return searchId;
-    };
-
-    /* Create Element to output the results */
-    SearchCountry.prototype.creatElement = function(tagElement, idElement){
-        this.tagElement = tagElement;
-        this.idElement = idElement;
-        var results = document.createElement(this.tagElement);
-        results.id = 'search-result-'+this.idElement;
-        results.className = 'select-result';
-        results.multiple = 'multiple';
-
-        searchParent = searchId.parentNode;
-        searchParent.id = 'div-'+this.keyword; // add ID to parent element DOM
-        searchParent.appendChild(results);     // open results list
-        return results;
-    };
+    /*for(var i=0; i<searchInputCollection.length; i++) {
+     searchInputCollection[i].onfocus = function(e) {
+     e = e || window.event;
+     e.target = e.srcElement || e.target;
+     //alert(e.target);
+     searchId = e.target
+     var results = SearchCountry.creatElement('select',searchId);
+     SearchCountry.init(searchId,results);
+     //return searchId;
+     }
+     }*/
 
     var searchId = this.getElementInput();                      // Element INPUT initialization
-    var results = this.creatElement('select',this.keyword);     // Result Element initialization
+    var results = this.creatElement('select',this.keyword,searchId);     // Result Element initialization
 
     /* input handler */
     SearchCountry.inputHandler = function (e) {
@@ -144,7 +152,6 @@ function SearchCountry(word) {
                 var req = new XMLHTTP_Request(searchId.value);   // Constructor call XMLHTTPRequest
                 req.CreateRequest();
                 req.SendRequest();
-                //var req = new XMLHTTP_Request(searchId.value);   // Constructor call XMLHTTPRequest
             }
         }else if (searchId.value.length < 3){ // if empty area - hide the result
             results.style.display = 'none';
@@ -154,7 +161,6 @@ function SearchCountry(word) {
     /* list handler */
     SearchCountry.listHandler = function(e) {
         var keyCodeValue = GetKeyCode(e);
-
         if(keyCodeValue) {
             // if "Enter" key
             if (keyCodeValue == SearchCountry.ENTER){
@@ -195,9 +201,8 @@ function SearchCountry(word) {
 
     //  Building a list Method
     SearchCountry.searchReply = function() {
-        var response = eval('('+XMLHTTP_Request.http.responseText+')');
+        var response = JSON.parse(XMLHTTP_Request.http.responseText);
         response = response.countries;
-        //alert(typeof response);
         //var response = {"countries":[{"id":20,"iso2":"BY","iso3":"BLR","short_name":"Belarus","long_name":"Republic of Belarus"},{"id":21,"iso2":"BE","iso3":"BEL","short_name":"Belgium","long_name":"Kingdom of Belgium"},{"id":22,"iso2":"BZ","iso3":"BLZ","short_name":"Belize","long_name":"Belize"}]}
         var listHTML = '';
         for (var i=0; i<response.length; i++){
@@ -218,3 +223,6 @@ function SearchCountry(word) {
 
     this.init();
 }
+
+var search = new SearchCountry('keyword');
+//var search1 = new SearchCountry('keyword1');
