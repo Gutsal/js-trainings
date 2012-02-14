@@ -121,7 +121,6 @@ function SearchCountry(word) {
     SearchCountry.inputHandler = function (e) {
         var keyCodeValue = GetKeyCode(e);
         results.selectedIndex = -1;
-        //alert(this.id+' | '+searchId.id);
         if (searchId.value.length > 2 && keyCodeValue != SearchCountry.ENTER) {
             if (keyCodeValue == SearchCountry.DOWN) {
                 results.focus();
