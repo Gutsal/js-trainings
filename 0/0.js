@@ -89,15 +89,12 @@ function GetKeyCode(e){
 SearchCountry.prototype.creatElement = function(tagElement, idElement, searchId){
     this.tagElement = tagElement;
     this.idElement = idElement;
-    //alert(searchId);
-        //alert(this.results);
-        results = document.createElement(this.tagElement);
-        results.className = 'select-result';
-        results.id = 'select-result-'+this.keyword;
-        results.multiple = 'multiple';
-
-        searchParent = searchId.parentNode;
-        searchParent.appendChild(results);     // open results list
+    results = document.createElement(this.tagElement);
+    results.className = 'select-result';
+    results.id = 'select-result-'+this.keyword;
+    results.multiple = 'multiple';
+    searchParent = searchId.parentNode;
+    searchParent.appendChild(results);     // open results list
     return results;
 };
 
@@ -105,6 +102,7 @@ SearchCountry.prototype.creatElement = function(tagElement, idElement, searchId)
 /* Search Request Constructor */
 function SearchCountry(word) {
 
+    SearchCountry.TAB = 9;
     SearchCountry.LEFT = 37;
     SearchCountry.UP = 38;
     SearchCountry.RIGHT = 39;
@@ -121,7 +119,6 @@ function SearchCountry(word) {
     SearchCountry.inputHandler = function (e) {
         var keyCodeValue = GetKeyCode(e);
         results.selectedIndex = -1;
-        
         if (searchId.value.length > 2 && keyCodeValue != SearchCountry.ENTER) {
             if (keyCodeValue == SearchCountry.DOWN) {
                 results.focus();
@@ -130,7 +127,7 @@ function SearchCountry(word) {
                 eventInput.Create_EventListener();
                 return;
             }
-            if (keyCodeValue != SearchCountry.LEFT && keyCodeValue != SearchCountry.UP && keyCodeValue != SearchCountry.RIGHT) {
+            if (keyCodeValue != SearchCountry.LEFT && keyCodeValue != SearchCountry.UP && keyCodeValue != SearchCountry.RIGHT && keyCodeValue != SearchCountry.TAB) {
                 var req = new XMLHTTP_Request(searchId.value);   // Constructor call XMLHTTPRequest
                 req.CreateRequest();
                 req.SendRequest(results);
@@ -143,6 +140,9 @@ function SearchCountry(word) {
     /* list handler */
     SearchCountry.listHandler = function(e) {
         var keyCodeValue = GetKeyCode(e);
+        //alert(keyCodeValue);
+        searchId = document.getElementById(this.id.replace(/select-result-/,''));
+        //alert(searchId.id);
         if(keyCodeValue) {
             // if "Enter" key
             if (keyCodeValue == SearchCountry.ENTER){
@@ -190,6 +190,7 @@ function SearchCountry(word) {
         for (var i=0; i<response.length; i++){
             listHTML += '<option value="'+response[i].id+'">'+response[i].short_name+'</option>';
         }
+        //alert(searchId.id)
         results.innerHTML = listHTML;
         results.style.display = "block";
     };
