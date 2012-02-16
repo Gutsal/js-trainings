@@ -35,7 +35,7 @@ XMLHTTP_Request.prototype.SendRequest = function(results){
         XMLHTTP_Request.http.onreadystatechange =  function(){
             if(XMLHTTP_Request.http.readyState == XMLHTTP_Request.READY){
                 if(XMLHTTP_Request.http.status == XMLHTTP_Request.STATUS){
-                    SearchCountry.searchReply(results);
+                    Autocomplete.searchReply(results);
                 }
                 else {
                     console.log("Unable to get data. XMLHTTP_Request.http.status:",XMLHTTP_Request.http.status);
@@ -86,7 +86,7 @@ function GetKeyCode(e){
 }
 
 /* Create Element to output the results */
-SearchCountry.prototype.creatElement = function(tagElement, idElement, searchId){
+Autocomplete.prototype.creatElement = function(tagElement, idElement, searchId){
     this.tagElement = tagElement;
     this.idElement = idElement;
     results = document.createElement(this.tagElement);
@@ -100,15 +100,15 @@ SearchCountry.prototype.creatElement = function(tagElement, idElement, searchId)
 
 
 /* Search Request Constructor */
-function SearchCountry(word) {
+function Autocomplete(word,category) {
 
-    SearchCountry.TAB = 9;
-    SearchCountry.LEFT = 37;
-    SearchCountry.UP = 38;
-    SearchCountry.RIGHT = 39;
-    SearchCountry.DOWN = 40;
-    SearchCountry.ENTER = 13;
-    SearchCountry.countries = null;
+    Autocomplete.TAB = 9;
+    Autocomplete.LEFT = 37;
+    Autocomplete.UP = 38;
+    Autocomplete.RIGHT = 39;
+    Autocomplete.DOWN = 40;
+    Autocomplete.ENTER = 13;
+    Autocomplete.countries = null;
 
     this.keyword = word;
 
@@ -116,18 +116,18 @@ function SearchCountry(word) {
     var results = this.creatElement('select',this.keyword,searchId);     // Result Element initialization
 
     /* input handler */
-    SearchCountry.inputHandler = function (e) {
+    Autocomplete.inputHandler = function (e) {
         var keyCodeValue = GetKeyCode(e);
         results.selectedIndex = -1;
-        if (searchId.value.length > 2 && keyCodeValue != SearchCountry.ENTER) {
-            if (keyCodeValue == SearchCountry.DOWN) {
+        if (searchId.value.length > 2 && keyCodeValue != Autocomplete.ENTER) {
+            if (keyCodeValue == Autocomplete.DOWN) {
                 results.focus();
                 results.getElementsByTagName('option')[0].selected = 'selected';
-                var eventInput = new EventListener(results, 'keydown', SearchCountry.listHandler);
+                var eventInput = new EventListener(results, 'keydown', Autocomplete.listHandler);
                 eventInput.Create_EventListener();
                 return;
             }
-            if (keyCodeValue != SearchCountry.LEFT && keyCodeValue != SearchCountry.UP && keyCodeValue != SearchCountry.RIGHT && keyCodeValue != SearchCountry.TAB) {
+            if (keyCodeValue != Autocomplete.LEFT && keyCodeValue != Autocomplete.UP && keyCodeValue != Autocomplete.RIGHT && keyCodeValue != Autocomplete.TAB) {
                 var req = new XMLHTTP_Request(searchId.value);   // Constructor call XMLHTTPRequest
                 req.CreateRequest();
                 req.SendRequest(results);
@@ -138,14 +138,14 @@ function SearchCountry(word) {
     };
 
     /* list handler */
-    SearchCountry.listHandler = function(e) {
+    Autocomplete.listHandler = function(e) {
         var keyCodeValue = GetKeyCode(e);
         //alert(keyCodeValue);
         searchId = document.getElementById(this.id.replace(/select-result-/,''));
         //alert(searchId.id);
         if(keyCodeValue) {
             // if "Enter" key
-            if (keyCodeValue == SearchCountry.ENTER){
+            if (keyCodeValue == Autocomplete.ENTER){
                 searchId.value = this[this.selectedIndex].text;
                 this.selectedIndex = -1;
                 this.style.display = 'none';
@@ -159,13 +159,13 @@ function SearchCountry(word) {
                 return;
             }
             // if "Up Arrow" key
-            if (keyCodeValue == SearchCountry.UP){
+            if (keyCodeValue == Autocomplete.UP){
                 if (this.selectedIndex == 0) {
                     searchId.focus();
                 }
             }
             // if choose the last
-            if (keyCodeValue == SearchCountry.DOWN){
+            if (keyCodeValue == Autocomplete.DOWN){
                 if (this.selectedIndex == this.length-1) {
                     this.selectedIndex = -1;
                 }
@@ -174,7 +174,7 @@ function SearchCountry(word) {
     };
 
     /* Mouse click handler */
-    SearchCountry.clickHandler = function(){
+    Autocomplete.clickHandler = function(){
         searchId.value = this[this.selectedIndex].text;
         this.selectedIndex = -1;
         this.style.display = 'none';
@@ -182,9 +182,9 @@ function SearchCountry(word) {
     };
 
     //  Building a list Method
-    SearchCountry.searchReply = function(results) {
+    Autocomplete.searchReply = function(results) {
         var response = JSON.parse(XMLHTTP_Request.http.responseText);
-        response = response.countries;
+        response = response[category];
         //var response = {"countries":[{"id":20,"iso2":"BY","iso3":"BLR","short_name":"Belarus","long_name":"Republic of Belarus"},{"id":21,"iso2":"BE","iso3":"BEL","short_name":"Belgium","long_name":"Kingdom of Belgium"},{"id":22,"iso2":"BZ","iso3":"BLZ","short_name":"Belize","long_name":"Belize"}]}
         var listHTML = '';
         for (var i=0; i<response.length; i++){
@@ -196,16 +196,16 @@ function SearchCountry(word) {
     };
 
     this.init = function(){
-        var eventInput = new EventListener(searchId, 'keyup', SearchCountry.inputHandler);      // INPUT handler call
+        var eventInput = new EventListener(searchId, 'keyup', Autocomplete.inputHandler);      // INPUT handler call
         eventInput.Create_EventListener();
-        var eventList = new EventListener(results, 'click', SearchCountry.listHandler);         // Parsing of results list
+        var eventList = new EventListener(results, 'click', Autocomplete.listHandler);         // Parsing of results list
         eventList.Create_EventListener();
-        var eventMauseClick = new EventListener(results, 'click', SearchCountry.clickHandler);  // Mouse click event
+        var eventMauseClick = new EventListener(results, 'click', Autocomplete.clickHandler);  // Mouse click event
         eventMauseClick.Create_EventListener();
     }
 
     this.init();
 }
 
-var search = new SearchCountry('keyword');
-var search1 = new SearchCountry('keyword1');
+var search = new Autocomplete('keyword','countries');
+var search1 = new Autocomplete('keyword1','countries');
