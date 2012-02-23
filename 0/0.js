@@ -1,5 +1,5 @@
 /*   XMLHTTPRequest Constructor    */
-function XmlHttpRequest (KeyPhrase) {
+function XmlHttpRequest (KeyPhrase){
     XmlHttpRequest.prototype.Phrase = KeyPhrase;
     XmlHttpRequest.prototype.Http = null;
     XmlHttpRequest.prototype.Ready = 4;
@@ -7,20 +7,23 @@ function XmlHttpRequest (KeyPhrase) {
 }
 
 XmlHttpRequest.prototype.Create = function(){
-    if (window.XMLHttpRequest) {
+    if (window.XMLHttpRequest){
         try {
             XmlHttpRequest.prototype.Http = new XMLHttpRequest();
-        } catch (e){
+        }
+        catch (e){
             console.log("Name", e.name, "Message", e.message);
         }
     }
-    else if (window.ActiveXObject) {
+    else if (window.ActiveXObject){
         try {
             XmlHttpRequest.prototype.Http = new ActiveXObject('Msxml2.XMLHTTP');
-        } catch (e){
+        }
+        catch (e){
             try {
                 XmlHttpRequest.prototype.Http = new ActiveXObject('Microsoft.XMLHTTP');
-            } catch (e){
+            }
+            catch (e){
                 console.log("Name", e.name, "Message", e.message);
                 //console.exception(e.name, e.message);
             }
@@ -51,7 +54,7 @@ XmlHttpRequest.prototype.Send = function(Results){
 }
 
 /* Event listener Constructor */
-function EventListener (El, Type, Fn) {
+function EventListener (El, Type, Fn){
     this.El = El;
     this.Type = Type;
     this.Fn = Fn;
@@ -59,10 +62,10 @@ function EventListener (El, Type, Fn) {
 
 /* ADD Event Method */
 EventListener.prototype.Create = function(){
-    if (typeof this.El.addEventListener === 'function') {
+    if (typeof this.El.addEventListener === 'function'){
         this.El.addEventListener(this.Type, this.Fn, false);
     }
-    else if (typeof this.El.attachEvent === 'function') {
+    else if (typeof this.El.attachEvent === 'function'){
         this.El.attachEvent('on' + this.Type, this.Fn);
     }
     else {
@@ -100,7 +103,7 @@ Autocomplete.prototype.CreateElement = function(TagElement, IterationElement, Se
 
 
 /* Search Request Constructor */
-function Autocomplete(data) {
+function Autocomplete(data){
 
     Autocomplete.prototype.Keyword = data.Word;
     Autocomplete.prototype.Category = data.Category;
@@ -119,12 +122,12 @@ function Autocomplete(data) {
     }
 
     /* input handler */
-    Autocomplete.InputHandler = function (e) {
+    Autocomplete.InputHandler = function (e){
         var KeyCodeValue = GetKeyCode(e);
             Results = this.nextElementSibling;
             Results.selectedIndex = -1;
-            if (this.value.length > 2 && KeyCodeValue != Autocomplete.prototype.Enter) {
-                if (KeyCodeValue == Autocomplete.prototype.Down) {
+            if (this.value.length > 2 && KeyCodeValue != Autocomplete.prototype.Enter){
+                if (KeyCodeValue == Autocomplete.prototype.Down){
                     Results.focus();
                     Results.getElementsByTagName('option')[0].selected = 'selected';
                     var EventInput = new EventListener(Results, 'keydown', Autocomplete.ListHandler);
@@ -133,7 +136,7 @@ function Autocomplete(data) {
                     EventMouseClick.Create();
                     return;
                 }
-                if (KeyCodeValue != Autocomplete.prototype.Left && KeyCodeValue != Autocomplete.prototype.Up && KeyCodeValue != Autocomplete.prototype.Right && KeyCodeValue != Autocomplete.prototype.Tab) {
+                if (KeyCodeValue != Autocomplete.prototype.Left && KeyCodeValue != Autocomplete.prototype.Up && KeyCodeValue != Autocomplete.prototype.Right && KeyCodeValue != Autocomplete.prototype.Tab){
                     var Req = new XmlHttpRequest(this.value);   // Constructor call XmlHttpRequest
                     Req.Create();
                     Req.Send(Results);
