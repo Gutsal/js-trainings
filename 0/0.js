@@ -1,80 +1,82 @@
 /*   XMLHTTPRequest Constructor    */
-function XMLHTTP_Request (keyPhrase) {
-    this.phrase = keyPhrase;
-    XMLHTTP_Request.http = null;
-    XMLHTTP_Request.READY = 4;
-    XMLHTTP_Request.STATUS = 200;
-    XMLHTTP_Request.URL = 'http://javascript-training.gametrailers.minsk.epam.com/jstraning/countries.php?q=';
+function XmlHttpRequest (KeyPhrase) {
+    XmlHttpRequest.prototype.Phrase = KeyPhrase;
+    XmlHttpRequest.prototype.Http = null;
+    XmlHttpRequest.prototype.Ready = 4;
+    XmlHttpRequest.prototype.Status = 200;
 }
 
-XMLHTTP_Request.prototype.CreateRequest = function(){
+XmlHttpRequest.prototype.Create = function(){
     if (window.XMLHttpRequest) {
         try {
-            XMLHTTP_Request.http = new XMLHttpRequest();
+            XmlHttpRequest.prototype.Http = new XMLHttpRequest();
         } catch (e){
             console.log("Name", e.name, "Message", e.message);
         }
-    } else if (window.ActiveXObject) {
+    }
+    else if (window.ActiveXObject) {
         try {
-            XMLHTTP_Request.http = new ActiveXObject('Msxml2.XMLHTTP');
+            XmlHttpRequest.prototype.Http = new ActiveXObject('Msxml2.XMLHTTP');
         } catch (e){
             try {
-                XMLHTTP_Request.http = new ActiveXObject('Microsoft.XMLHTTP');
+                XmlHttpRequest.prototype.Http = new ActiveXObject('Microsoft.XMLHTTP');
             } catch (e){
                 console.log("Name", e.name, "Message", e.message);
                 //console.exception(e.name, e.message);
             }
         }
     }
-    return XMLHTTP_Request.http;
+    return XmlHttpRequest.prototype.Http;
 }
 
-XMLHTTP_Request.prototype.SendRequest = function(results){
-    if (XMLHTTP_Request.http){
-        searchUrl = XMLHTTP_Request.URL+this.phrase;
-        XMLHTTP_Request.http.onreadystatechange =  function(){
-            if(XMLHTTP_Request.http.readyState == XMLHTTP_Request.READY){
-                if(XMLHTTP_Request.http.status == XMLHTTP_Request.STATUS){
-                    Autocomplete.searchReply(results);
+XmlHttpRequest.prototype.Send = function(Results){
+    if (XmlHttpRequest.prototype.Http){
+        SearchUrl = Autocomplete.prototype.Url+XmlHttpRequest.prototype.Phrase;
+        XmlHttpRequest.prototype.Http.onreadystatechange =  function(){
+            if (XmlHttpRequest.prototype.Http.readyState == XmlHttpRequest.prototype.Ready){
+                if (XmlHttpRequest.prototype.Http.status == XmlHttpRequest.prototype.Status){
+                    Autocomplete.SearchReply(Results);
                 }
                 else {
-                    console.log("Unable to get data. XMLHTTP_Request.http.status:",XMLHTTP_Request.http.status);
+                    console.log("Unable to get data. XMLHTTP_Request.http.status:",XmlHttpRequest.prototype.Http.status);
                 }
             }
         }
-        XMLHTTP_Request.http.open('get', searchUrl, true);
-        XMLHTTP_Request.http.send(null);
-    }else{
-        console.log("Браузер не поддерживает AJAX");
+        XmlHttpRequest.prototype.Http.open('get', SearchUrl, true);
+        XmlHttpRequest.prototype.Http.send(null);
+    }
+    else {
+        console.log("Your browser does not support AJAX");
     }
 }
 
 /* Event listener Constructor */
-function EventListener (el, type, fn) {
-    this.el = el;
-    this.type = type;
-    this.fn = fn;
+function EventListener (El, Type, Fn) {
+    this.El = El;
+    this.Type = Type;
+    this.Fn = Fn;
 }
 
 /* ADD Event Method */
-EventListener.prototype.Create_EventListener = function(){
-    if (typeof this.el.addEventListener === 'function') {
-        this.el.addEventListener(this.type, this.fn, false);
-    } else if (typeof this.el.attachEvent === 'function') {
-        this.el.attachEvent('on' + this.type, this.fn);
-    } else {
-        this.el['on' + this.type] = this.fn;
+EventListener.prototype.Create = function(){
+    if (typeof this.El.addEventListener === 'function') {
+        this.El.addEventListener(this.Type, this.Fn, false);
+    }
+    else if (typeof this.El.attachEvent === 'function') {
+        this.El.attachEvent('on' + this.Type, this.Fn);
+    }
+    else {
+        this.El['on' + this.Type] = this.Fn;
     }
 }
 
 /* REMOVE Event Method */
-EventListener.prototype.Remove_EventListener = function(){
-    if (typeof this.el.removeEventListener === 'function') {
-        this.el.removeEventListener(this.type, this.fn, false);
-    } else if (typeof this.el.detachEvent === 'function') {
-        this.el.detachEvent('on' + this.type, this.fn);
-    } else {
-        //this.el['on' + this.type] = this.fn;
+EventListener.prototype.Remove = function(){
+    if (typeof this.El.removeEventListener === 'function') {
+        this.El.removeEventListener(this.Type, this.Fn, false);
+    }
+    else if (typeof this.El.detachEvent === 'function') {
+        this.El.detachEvent('on' + this.Type, this.fn);
     }
 }
 
@@ -86,86 +88,95 @@ function GetKeyCode(e){
 }
 
 /* Create Element to output the results */
-Autocomplete.prototype.creatElement = function(tagElement, idElement, searchId){
-    this.tagElement = tagElement;
-    this.idElement = idElement;
-    results = document.createElement(this.tagElement);
-    results.className = 'select-result';
-    results.id = 'select-result-'+this.keyword;
-    results.multiple = 'multiple';
-    searchParent = searchId.parentNode;
-    searchParent.appendChild(results);     // open results list
-    return results;
+Autocomplete.prototype.CreateElement = function(TagElement, IterationElement, SearchId){
+    Results = document.createElement(TagElement);
+    Results.className = 'select-result';
+    Results.id = 'select-result-'+IterationElement;
+    Results.multiple = 'multiple';
+    SearchParent = SearchId.parentNode;
+    SearchParent.appendChild(Results);     // open results list
+    return Results;
 };
 
 
 /* Search Request Constructor */
-function Autocomplete(word,category) {
+function Autocomplete(data) {
 
-    Autocomplete.TAB = 9;
-    Autocomplete.LEFT = 37;
-    Autocomplete.UP = 38;
-    Autocomplete.RIGHT = 39;
-    Autocomplete.DOWN = 40;
-    Autocomplete.ENTER = 13;
-    Autocomplete.countries = null;
+    Autocomplete.prototype.Keyword = data.Word;
+    Autocomplete.prototype.Category = data.Category;
+    Autocomplete.prototype.Url = data.Url;
+    Autocomplete.prototype.Tab = 9;
+    Autocomplete.prototype.Left = 37;
+    Autocomplete.prototype.Up = 38;
+    Autocomplete.prototype.Right = 39;
+    Autocomplete.prototype.Down = 40;
+    Autocomplete.prototype.Enter = 13;
+    Autocomplete.prototype.SearchCollection = document.getElementsByClassName(Autocomplete.prototype.Keyword);         // Element INPUT initialization
 
-    this.keyword = word;
-
-    var searchId = document.getElementById(this.keyword);                // Element INPUT initialization
-    var results = this.creatElement('select',this.keyword,searchId);     // Result Element initialization
+    for (i = 0; i < Autocomplete.prototype.SearchCollection.length; i++){
+        var SearchId = Autocomplete.prototype.SearchCollection[i];                         // Element INPUT initialization
+        var Results = this.CreateElement('select',i,SearchId);      // Result Element initialization
+    }
 
     /* input handler */
-    Autocomplete.inputHandler = function (e) {
-        var keyCodeValue = GetKeyCode(e);
-        results.selectedIndex = -1;
-        if (searchId.value.length > 2 && keyCodeValue != Autocomplete.ENTER) {
-            if (keyCodeValue == Autocomplete.DOWN) {
-                results.focus();
-                results.getElementsByTagName('option')[0].selected = 'selected';
-                var eventInput = new EventListener(results, 'keydown', Autocomplete.listHandler);
-                eventInput.Create_EventListener();
-                return;
+    Autocomplete.InputHandler = function (e) {
+        var KeyCodeValue = GetKeyCode(e);
+            Results = this.nextElementSibling;
+            Results.selectedIndex = -1;
+            if (this.value.length > 2 && KeyCodeValue != Autocomplete.prototype.Enter) {
+                if (KeyCodeValue == Autocomplete.prototype.Down) {
+                    Results.focus();
+                    Results.getElementsByTagName('option')[0].selected = 'selected';
+                    var EventInput = new EventListener(Results, 'keydown', Autocomplete.ListHandler);
+                    EventInput.Create();
+                    var EventMouseClick = new EventListener(Results, 'click', Autocomplete.ClickHandler);  // Mouse click event
+                    EventMouseClick.Create();
+                    return;
+                }
+                if (KeyCodeValue != Autocomplete.prototype.Left && KeyCodeValue != Autocomplete.prototype.Up && KeyCodeValue != Autocomplete.prototype.Right && KeyCodeValue != Autocomplete.prototype.Tab) {
+                    var Req = new XmlHttpRequest(this.value);   // Constructor call XmlHttpRequest
+                    Req.Create();
+                    Req.Send(Results);
+                }
             }
-            if (keyCodeValue != Autocomplete.LEFT && keyCodeValue != Autocomplete.UP && keyCodeValue != Autocomplete.RIGHT && keyCodeValue != Autocomplete.TAB) {
-                var req = new XMLHTTP_Request(searchId.value);   // Constructor call XMLHTTPRequest
-                req.CreateRequest();
-                req.SendRequest(results);
+            else if (this.value.length < 3){ // if empty area - hide the result
+                Results.style.display = 'none';
             }
-        }else if (searchId.value.length < 3){ // if empty area - hide the result
-            results.style.display = 'none';
-        }
     };
 
     /* list handler */
-    Autocomplete.listHandler = function(e) {
-        var keyCodeValue = GetKeyCode(e);
-        //alert(keyCodeValue);
-        searchId = document.getElementById(this.id.replace(/select-result-/,''));
-        //alert(searchId.id);
-        if(keyCodeValue) {
+    Autocomplete.ListHandler = function(e){
+        var KeyCodeValue = GetKeyCode(e);
+        var Current = parseInt(this.id.replace(/select-result-/,''));
+        for (i = 0; i < Autocomplete.prototype.SearchCollection.length; i++){
+            if (Current == i){
+                SearchId = Autocomplete.prototype.SearchCollection[i];
+            }
+        }
+        if (KeyCodeValue){
             // if "Enter" key
-            if (keyCodeValue == Autocomplete.ENTER){
-                searchId.value = this[this.selectedIndex].text;
+            if (KeyCodeValue == Autocomplete.prototype.Enter){
+                SearchId.value = this[this.selectedIndex].text;
                 this.selectedIndex = -1;
                 this.style.display = 'none';
-                searchId.focus();
+                SearchId.focus();
                 // prevent default action
-                if(e.preventDefault) {
+                if (e.preventDefault){
                     e.preventDefault();
-                } else {
+                }
+                else {
                     e.returnValue = false;
                 }
                 return;
             }
             // if "Up Arrow" key
-            if (keyCodeValue == Autocomplete.UP){
-                if (this.selectedIndex == 0) {
-                    searchId.focus();
+            if (KeyCodeValue == Autocomplete.prototype.Up){
+                if (this.selectedIndex == 0){
+                    SearchId.focus();
                 }
             }
             // if choose the last
-            if (keyCodeValue == Autocomplete.DOWN){
+            if (KeyCodeValue == Autocomplete.prototype.Down){
                 if (this.selectedIndex == this.length-1) {
                     this.selectedIndex = -1;
                 }
@@ -174,38 +185,52 @@ function Autocomplete(word,category) {
     };
 
     /* Mouse click handler */
-    Autocomplete.clickHandler = function(){
-        searchId.value = this[this.selectedIndex].text;
+    Autocomplete.ClickHandler = function(e){
+        var Current = parseInt(this.id.replace(/select-result-/,''));
+        for (i = 0; i < Autocomplete.prototype.SearchCollection.length; i++){
+            if (Current == i){
+                SearchId = Autocomplete.prototype.SearchCollection[i];
+            }
+        }
+        SearchId.value = this[this.selectedIndex].text;
         this.selectedIndex = -1;
         this.style.display = 'none';
-        searchId.focus();
+        SearchId.focus();
     };
 
     //  Building a list Method
-    Autocomplete.searchReply = function(results) {
-        var response = JSON.parse(XMLHTTP_Request.http.responseText);
-        response = response[category];
+    Autocomplete.SearchReply = function(Results) {
+        var Response = JSON.parse(XmlHttpRequest.prototype.Http.responseText);
+        Response = Response[Autocomplete.prototype.Category];
         //var response = {"countries":[{"id":20,"iso2":"BY","iso3":"BLR","short_name":"Belarus","long_name":"Republic of Belarus"},{"id":21,"iso2":"BE","iso3":"BEL","short_name":"Belgium","long_name":"Kingdom of Belgium"},{"id":22,"iso2":"BZ","iso3":"BLZ","short_name":"Belize","long_name":"Belize"}]}
-        var listHTML = '';
-        for (var i=0; i<response.length; i++){
-            listHTML += '<option value="'+response[i].id+'">'+response[i].short_name+'</option>';
+        Results.innerHTML = '';
+        for (var i=0; i<Response.length; i++){
+            ResultList = document.createElement('option');
+            ResultList.id = Response[i].id;
+            ResultList.text = Response[i].short_name;
+            Results.appendChild(ResultList);
         }
-        //alert(searchId.id)
-        results.innerHTML = listHTML;
-        results.style.display = "block";
+        if (Response.length != 0){
+            Results.style.display = "block";
+        }
+        else {
+            console.log("Result is empty. "+Autocomplete.prototype.Category+': '+Response.length);
+        }
+
     };
 
-    this.init = function(){
-        var eventInput = new EventListener(searchId, 'keyup', Autocomplete.inputHandler);      // INPUT handler call
-        eventInput.Create_EventListener();
-        var eventList = new EventListener(results, 'click', Autocomplete.listHandler);         // Parsing of results list
-        eventList.Create_EventListener();
-        var eventMauseClick = new EventListener(results, 'click', Autocomplete.clickHandler);  // Mouse click event
-        eventMauseClick.Create_EventListener();
+    this.Init = function(){
+        var EventInput = new EventListener(Autocomplete.prototype.SearchCollection[i], 'keyup', Autocomplete.InputHandler);      // INPUT handler call
+        EventInput.Create();
     }
 
-    this.init();
+    for (i = 0; i < Autocomplete.prototype.SearchCollection.length; i++){
+        this.Init(i);
+    }
 }
 
-var search = new Autocomplete('keyword','countries');
-var search1 = new Autocomplete('keyword1','countries');
+var search = new Autocomplete({
+    Word:'keyword',
+    Category:'countries',
+    Url:'http://javascript-training.gametrailers.minsk.epam.com/jstraning/countries.php?q='
+});
